@@ -1,0 +1,13 @@
+customer_id,email,age,account_balance,is_active,tier,signup_date,last_login_at
+c001,alice@example.com,34,1200.00,true,professional,2022-03-10,2024-11-01T08:45:00
+c002,bob@example.com,28,0.00,false,free,2023-07-22,2024-09-15T14:30:00
+c003,carol@example.com,45,4500.50,true,enterprise,2021-01-05,2024-12-01T09:00:00
+c004,dan@example.com,22,300.00,true,starter,2023-11-30,2024-10-20T17:15:00
+c005,eve@example.com,,150.75,false,free,2024-02-14,
+c006,frank@example.com,38,900.00,true,professional,2022-08-19,2024-11-28T11:00:00
+c007,grace@example.com,31,0.00,false,free,2024-05-01,
+c008,hank@example.com,55,7200.00,true,enterprise,2020-06-15,2024-12-05T16:45:00
+c009,ivy@example.com,27,250.00,true,starter,2023-09-09,2024-11-11T10:30:00
+c010,jack@example.com,40,3100.00,true,professional,2021-12-25,2024-10-31T08:00:00
+c011,broken@example.com,not-a-number,500.00,true,starter,2023-04-01,2024-09-01T00:00:00
+c001,duplicate@example.com,30,100.00,yes,vip,2024-01-01,2024-06-01T12:00:00

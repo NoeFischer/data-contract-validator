@@ -1,0 +1,52 @@
+contract:
+  name: customers
+  version: "1.0.0"
+  description: Validated customer export from the CRM system.
+  owner: data-engineering@example.com
+
+schema:
+  columns:
+    - name: customer_id
+      type: string
+      constraints:
+        required: true
+        unique: true
+
+    - name: email
+      type: string
+      constraints:
+        required: true
+        unique: true
+
+    - name: age
+      type: integer
+      constraints:
+        required: false
+
+    - name: account_balance
+      type: float
+      constraints:
+        required: true
+
+    - name: is_active
+      type: boolean
+      constraints:
+        required: true
+
+    - name: tier
+      type: string
+      constraints:
+        required: true
+        enum: [free, starter, professional, enterprise]
+
+    - name: signup_date
+      type: date
+      format: "%Y-%m-%d"
+      constraints:
+        required: true
+
+    - name: last_login_at
+      type: datetime
+      format: "%Y-%m-%dT%H:%M:%S"
+      constraints:
+        required: false
