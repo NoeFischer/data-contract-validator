@@ -1,3 +1,9 @@
+"""Render validation reports to the terminal and as JSON files.
+
+Terminal output uses Rich for styled panels and tables.  JSON output
+serialises the ``ValidationReport`` model for use in CI pipelines.
+"""
+
 from __future__ import annotations
 
 import json
@@ -12,6 +18,15 @@ from data_contract_validator.models.report import ValidationReport
 
 
 def print_report(report: ValidationReport, console: Console | None = None) -> None:
+    """Print a styled validation summary to the terminal.
+
+    Displays a header panel with contract metadata and pass/fail status,
+    followed by a table of violations (if any).
+
+    Args:
+        report: The completed validation report.
+        console: Optional Rich ``Console`` instance (defaults to stdout).
+    """
     c = console or Console()
 
     passed = report.passed
@@ -56,6 +71,12 @@ def print_report(report: ValidationReport, console: Console | None = None) -> No
 
 
 def export_json(report: ValidationReport, output_path: str) -> None:
+    """Write the validation report as a JSON file.
+
+    Args:
+        report: The completed validation report.
+        output_path: Destination file path.
+    """
     path = Path(output_path)
     with path.open("w", encoding="utf-8") as f:
         json.dump(report.model_dump(mode="json"), f, indent=2)

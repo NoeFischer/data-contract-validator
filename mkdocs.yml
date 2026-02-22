@@ -1,0 +1,77 @@
+site_name: data-contract-validator
+site_description: Validate CSV files against declarative YAML data contracts
+repo_url: https://github.com/NoeFischer/data-contract-validator
+repo_name: NoeFischer/data-contract-validator
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - content.code.copy
+    - navigation.sections
+    - navigation.expand
+    - search.highlight
+    - search.suggest
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - toc:
+      permalink: true
+  - attr_list
+  - def_list
+  - tables
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            members_order: source
+            merge_init_into_class: true
+            show_signature_annotations: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+  - Guide:
+      - Contract Format: guide/contracts.md
+      - CLI Reference: guide/cli.md
+  - API Reference:
+      - Overview: api/index.md
+      - loader: api/loader.md
+      - validator: api/validator.md
+      - reporter: api/reporter.md
+      - Models:
+          - contract: api/models/contract.md
+          - report: api/models/report.md
+      - Checks:
+          - schema_checks: api/checks/schema_checks.md
+          - type_checks: api/checks/type_checks.md
+          - constraint_checks: api/checks/constraint_checks.md
+  - Changelog: changelog.md

@@ -1,3 +1,10 @@
+"""Schema presence checks.
+
+Verifies that every column declared in the data contract exists as a
+header in the CSV file.  Missing columns are reported as violations
+and excluded from downstream checks.
+"""
+
 from __future__ import annotations
 
 from data_contract_validator.models.contract import DataContract
@@ -9,11 +16,16 @@ def check_schema_presence(
     contract: DataContract,
     report: ValidationReport,
 ) -> set[str]:
-    """
-    Check that all columns declared in the contract exist in the CSV.
+    """Check that all columns declared in the contract exist in the CSV.
 
-    Returns the set of declared column names that are present in the data
-    so downstream checks can skip missing columns gracefully.
+    Args:
+        fieldnames: Column headers read from the CSV file.
+        contract: The parsed data contract.
+        report: Report to append violations to.
+
+    Returns:
+        The set of declared column names that are present in the data,
+        so downstream checks can skip missing columns gracefully.
     """
     csv_columns = set(fieldnames)
     contract_columns = set(contract.column_map.keys())

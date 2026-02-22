@@ -1,3 +1,13 @@
+"""Type coercion checks.
+
+Every cell in the CSV is read as a raw string.  This module attempts to
+coerce each value to the type declared in the contract (integer, float,
+boolean, date, datetime).  String columns pass through without coercion.
+
+Cells that cannot be coerced are recorded as violations and replaced
+with ``None`` so that downstream constraint checks can still run.
+"""
+
 from __future__ import annotations
 
 import datetime
@@ -8,17 +18,23 @@ from data_contract_validator.models.contract import ColumnDefinition, DataContra
 from data_contract_validator.models.report import ValidationReport, Violation
 
 BOOLEAN_TRUE = {"true", "1", "yes", "t"}
+"""Accepted truthy string representations (case-insensitive)."""
+
 BOOLEAN_FALSE = {"false", "0", "no", "f"}
+"""Accepted falsy string representations (case-insensitive)."""
 
 
 def _coerce(value: str, col_def: ColumnDefinition) -> tuple[Any, str | None]:
-    """
-    Attempt to coerce a raw string value to the declared column type.
+    """Attempt to coerce a raw string value to the declared column type.
 
-    Returns (coerced_value, error_message).
-    On success: (typed_value, None).
-    On failure: (None, error_message).
-    Empty string is treated as null — returns (None, None) with no error.
+    Args:
+        value: The raw cell value from the CSV.
+        col_def: Column definition with the target type and optional format.
+
+    Returns:
+        A ``(coerced_value, error_message)`` tuple.  On success the error
+        is ``None``; on failure the coerced value is ``None``.  Empty or
+        whitespace-only strings are treated as null — ``(None, None)``.
     """
     if value == "" or value.strip() == "":
         return None, None
@@ -72,11 +88,17 @@ def check_types(
     present_columns: set[str],
     report: ValidationReport,
 ) -> list[dict[str, Any]]:
-    """
-    Coerce every cell to its declared type.
+    """Coerce every cell to its declared type.
 
-    Returns a parallel list of dicts with typed values.
-    Cells that fail coercion become None and a violation is recorded.
+    Args:
+        rows: Raw CSV rows (column name to string value).
+        contract: The parsed data contract.
+        present_columns: Column names confirmed present in the CSV.
+        report: Report to append violations to.
+
+    Returns:
+        A parallel list of dicts with typed values.  Cells that fail
+        coercion become ``None`` and a violation is recorded.
     """
     coerced_rows: list[dict[str, Any]] = []
 

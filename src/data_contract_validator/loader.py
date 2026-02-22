@@ -1,3 +1,13 @@
+"""Load data contracts (YAML) and CSV data files.
+
+This module provides two loaders:
+
+- ``load_contract`` — parse and validate a YAML contract into a
+  ``DataContract`` model.
+- ``load_csv`` — read a CSV file as raw strings, returning fieldnames
+  and rows separately.
+"""
+
 from __future__ import annotations
 
 import csv
@@ -18,6 +28,18 @@ class DataLoadError(Exception):
 
 
 def load_contract(contract_path: str | Path) -> DataContract:
+    """Parse a YAML contract file and return a validated ``DataContract``.
+
+    Args:
+        contract_path: Path to the YAML contract file.
+
+    Returns:
+        A validated ``DataContract`` instance.
+
+    Raises:
+        ContractLoadError: If the file is missing, is not valid YAML,
+            or does not conform to the contract schema.
+    """
     path = Path(contract_path)
     if not path.exists():
         raise ContractLoadError(f"Contract file not found: {path}")
@@ -38,10 +60,22 @@ def load_contract(contract_path: str | Path) -> DataContract:
 
 
 def load_csv(data_path: str | Path) -> tuple[list[str], list[dict[str, str]]]:
-    """Load a CSV file and return (fieldnames, rows).
+    """Load a CSV file and return ``(fieldnames, rows)``.
 
-    Uses utf-8-sig to handle optional BOM from Excel exports.
-    All values are raw strings; empty cells become "".
+    Uses ``utf-8-sig`` encoding to transparently handle the optional
+    BOM (byte order mark) inserted by Excel exports.  All cell values
+    are returned as raw strings; empty trailing cells become ``""``.
+
+    Args:
+        data_path: Path to the CSV file.
+
+    Returns:
+        A tuple of ``(fieldnames, rows)`` where *fieldnames* is the
+        list of column headers and *rows* is a list of dicts mapping
+        column name to raw string value.
+
+    Raises:
+        DataLoadError: If the file is missing or cannot be read.
     """
     path = Path(data_path)
     if not path.exists():

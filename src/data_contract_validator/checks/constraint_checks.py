@@ -1,3 +1,10 @@
+"""Constraint checks: required, enum, and unique.
+
+These checks run on coerced (typed) values after type checking has
+completed.  Null values (``None``) are skipped by ``enum`` and
+``unique`` — use ``required`` to disallow nulls.
+"""
+
 from __future__ import annotations
 
 from typing import Any
@@ -12,7 +19,17 @@ def check_constraints(
     present_columns: set[str],
     report: ValidationReport,
 ) -> None:
-    """Apply required, enum, and unique constraints to coerced values."""
+    """Apply constraint rules to all columns that are present in the CSV.
+
+    Iterates over each column defined in the contract and runs whichever
+    constraints are configured (``required``, ``enum``, ``unique``).
+
+    Args:
+        coerced_rows: Rows with values already coerced to their declared types.
+        contract: The parsed data contract.
+        present_columns: Column names confirmed present in the CSV.
+        report: Report to append violations to.
+    """
     for col_def in contract.schema_.columns:
         if col_def.name not in present_columns:
             continue
@@ -35,6 +52,13 @@ def _check_required(
     values: list[Any],
     report: ValidationReport,
 ) -> None:
+    """Flag rows where a required column is null.
+
+    Args:
+        col: Column name.
+        values: Coerced values for every row in this column.
+        report: Report to append violations to.
+    """
     for row_index, value in enumerate(values):
         row_num = row_index + 2
         if value is None:
@@ -52,6 +76,16 @@ def _check_enum(
     allowed: list[str],
     report: ValidationReport,
 ) -> None:
+    """Flag rows where a value is not in the allowed set.
+
+    Null values are skipped — use ``required`` to catch those.
+
+    Args:
+        col: Column name.
+        values: Coerced values for every row in this column.
+        allowed: List of permitted string values.
+        report: Report to append violations to.
+    """
     allowed_set = set(allowed)
     for row_index, value in enumerate(values):
         if value is None:
@@ -74,6 +108,15 @@ def _check_unique(
     values: list[Any],
     report: ValidationReport,
 ) -> None:
+    """Flag rows where a value duplicates an earlier row.
+
+    Null values are not subject to uniqueness checks.
+
+    Args:
+        col: Column name.
+        values: Coerced values for every row in this column.
+        report: Report to append violations to.
+    """
     seen: dict[Any, int] = {}  # value -> first row number it appeared
     for row_index, value in enumerate(values):
         if value is None:
