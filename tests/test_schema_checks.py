@@ -16,9 +16,8 @@ def make_report() -> ValidationReport:
 
 def test_all_columns_present():
     contract = make_contract(["id", "name"])
-    rows = [{"id": "1", "name": "Alice"}]
     report = make_report()
-    present = check_schema_presence(rows, contract, report)
+    present = check_schema_presence(["id", "name"], contract, report)
     assert present == {"id", "name"}
     assert report.passed is True
     assert report.violations == []
@@ -26,9 +25,8 @@ def test_all_columns_present():
 
 def test_missing_column_adds_violation():
     contract = make_contract(["id", "name", "email"])
-    rows = [{"id": "1", "name": "Alice"}]  # email missing
     report = make_report()
-    present = check_schema_presence(rows, contract, report)
+    present = check_schema_presence(["id", "name"], contract, report)
     assert present == {"id", "name"}
     assert report.passed is False
     assert len(report.violations) == 1
@@ -38,25 +36,42 @@ def test_missing_column_adds_violation():
 
 def test_multiple_missing_columns():
     contract = make_contract(["id", "name", "email", "age"])
-    rows = [{"id": "1"}]
     report = make_report()
-    present = check_schema_presence(rows, contract, report)
+    present = check_schema_presence(["id"], contract, report)
     assert present == {"id"}
     assert len(report.violations) == 3
 
 
 def test_extra_csv_columns_are_ignored():
     contract = make_contract(["id"])
-    rows = [{"id": "1", "extra_col": "ignored"}]
     report = make_report()
-    present = check_schema_presence(rows, contract, report)
+    present = check_schema_presence(["id", "extra_col"], contract, report)
     assert present == {"id"}
     assert report.passed is True
 
 
-def test_empty_rows_all_columns_missing():
+def test_empty_fieldnames_all_columns_missing():
     contract = make_contract(["id", "name"])
     report = make_report()
     present = check_schema_presence([], contract, report)
     assert present == set()
     assert len(report.violations) == 2
+
+
+def test_header_only_csv_columns_detected():
+    """A CSV with headers but no data rows should still detect column presence."""
+    contract = make_contract(["id", "name"])
+    report = make_report()
+    present = check_schema_presence(["id", "name"], contract, report)
+    assert present == {"id", "name"}
+    assert report.passed is True
+
+
+def test_extra_and_missing_simultaneously():
+    contract = make_contract(["id", "email"])
+    report = make_report()
+    present = check_schema_presence(["id", "extra"], contract, report)
+    assert present == {"id"}
+    assert report.passed is False
+    assert len(report.violations) == 1
+    assert report.violations[0].column == "email"

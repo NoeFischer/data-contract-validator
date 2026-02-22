@@ -24,9 +24,12 @@ MINIMAL_CONTRACT = textwrap.dedent("""\
 """)
 
 
-def write_file(tmp_path: Path, filename: str, content: str) -> Path:
+def write_file(tmp_path: Path, filename: str, content: str | bytes, mode: str = "w") -> Path:
     p = tmp_path / filename
-    p.write_text(content, encoding="utf-8")
+    if isinstance(content, bytes):
+        p.write_bytes(content)
+    else:
+        p.write_text(content, encoding="utf-8")
     return p
 
 
@@ -58,7 +61,6 @@ def test_load_contract_not_a_mapping(tmp_path):
 
 
 def test_load_contract_missing_required_field(tmp_path):
-    # 'version' is required in ContractMetadata
     content = textwrap.dedent("""\
         contract:
           name: test
@@ -108,7 +110,8 @@ def test_load_contract_duplicate_columns(tmp_path):
 
 def test_load_csv_valid(tmp_path):
     p = write_file(tmp_path, "data.csv", "id,name\n1,Alice\n2,Bob\n")
-    rows = load_csv(p)
+    fieldnames, rows = load_csv(p)
+    assert fieldnames == ["id", "name"]
     assert len(rows) == 2
     assert rows[0] == {"id": "1", "name": "Alice"}
     assert rows[1] == {"id": "2", "name": "Bob"}
@@ -116,7 +119,7 @@ def test_load_csv_valid(tmp_path):
 
 def test_load_csv_all_values_are_strings(tmp_path):
     p = write_file(tmp_path, "data.csv", "count,price,active\n42,3.14,true\n")
-    rows = load_csv(p)
+    _, rows = load_csv(p)
     assert rows[0]["count"] == "42"
     assert rows[0]["price"] == "3.14"
     assert rows[0]["active"] == "true"
@@ -124,7 +127,7 @@ def test_load_csv_all_values_are_strings(tmp_path):
 
 def test_load_csv_empty_cells_are_empty_string(tmp_path):
     p = write_file(tmp_path, "data.csv", "id,name\n1,\n2,Bob\n")
-    rows = load_csv(p)
+    _, rows = load_csv(p)
     assert rows[0]["name"] == ""
 
 
@@ -135,11 +138,21 @@ def test_load_csv_file_not_found():
 
 def test_load_csv_empty_file(tmp_path):
     p = write_file(tmp_path, "empty.csv", "")
-    rows = load_csv(p)
+    fieldnames, rows = load_csv(p)
+    assert fieldnames == []
     assert rows == []
 
 
 def test_load_csv_header_only(tmp_path):
     p = write_file(tmp_path, "header.csv", "id,name\n")
-    rows = load_csv(p)
+    fieldnames, rows = load_csv(p)
+    assert fieldnames == ["id", "name"]
     assert rows == []
+
+
+def test_load_csv_bom_encoded(tmp_path):
+    bom_content = b"\xef\xbb\xbfid,name\n1,Alice\n"
+    p = write_file(tmp_path, "bom.csv", bom_content)
+    fieldnames, rows = load_csv(p)
+    assert fieldnames == ["id", "name"]  # no BOM prefix
+    assert rows[0] == {"id": "1", "name": "Alice"}

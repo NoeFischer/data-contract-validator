@@ -4,6 +4,36 @@ Changes are recorded here with a focus on *why* decisions were made, not just wh
 
 ---
 
+## [0.1.1] — 2026-02-22
+
+### Bug fixes and hardening
+
+**Why enum is now restricted to string columns**
+
+The `enum` constraint was comparing `str(coerced_value)` against the allowed list. This silently broke for booleans — Python's `str(True)` is `"True"` but the YAML enum list contains `"true"` (lowercase). Rather than adding type-dependent string normalization (which would be fragile), we restricted `enum` to string-only columns. Enum checks are fundamentally about categorical labels, which are strings.
+
+**Why float("nan") and float("inf") are now rejected**
+
+Python's `float()` accepts `"nan"`, `"inf"`, and `"-inf"`. These are IEEE 754 special values, not data. A CSV cell containing `"nan"` would pass validation silently — and worse, `NaN != NaN` means uniqueness checks would treat every NaN as distinct. We now reject non-finite floats at the type check stage.
+
+**Why whitespace is now stripped uniformly**
+
+Boolean coercion was stripping whitespace (`" true "` → `"true"`) but no other type was. This meant `" 42 "` failed integer parsing while `" true "` passed. Since CSV cells often have trailing spaces from cut-and-paste or export tools, all types now strip whitespace before coercion. Whitespace-only cells are treated as null.
+
+**Why load_csv now returns (fieldnames, rows)**
+
+Previously a header-only CSV (correct headers, zero data rows) was treated as "all columns missing" because the header information was discarded when there were no rows. Now `load_csv` returns the fieldnames separately, so schema checks work correctly even on empty data.
+
+**Why we switched to utf-8-sig encoding**
+
+CSV files exported from Excel include a UTF-8 BOM (byte order mark). With plain `utf-8` encoding, the BOM was prepended to the first column name — so `"customer_id"` became `"\ufeffcustomer_id"`, causing a schema violation. `utf-8-sig` strips the BOM transparently and is backward-compatible with BOM-less files.
+
+**Why we removed Click's exists=True**
+
+Click's `exists=True` path validation runs before our code, producing Click-styled error messages that bypass our custom `ContractLoadError`/`DataLoadError` handlers. Removing it gives us consistent error messages and makes the error handling paths actually testable.
+
+---
+
 ## [0.1.0] — 2026-02-22
 
 ### Initial release

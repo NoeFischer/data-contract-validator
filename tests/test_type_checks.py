@@ -39,6 +39,13 @@ def test_string_passes_anything():
     assert coerced[2]["x"] is None  # empty string -> None
 
 
+def test_string_whitespace_only_is_null():
+    coerced, report = run("string", ["  ", "\t"])
+    assert report.passed is True
+    assert coerced[0]["x"] is None
+    assert coerced[1]["x"] is None
+
+
 # ── integer ───────────────────────────────────────────────────────────────────
 
 def test_integer_valid():
@@ -69,6 +76,12 @@ def test_integer_empty_becomes_none_no_violation():
     assert coerced[0]["x"] is None
 
 
+def test_integer_whitespace_becomes_none():
+    coerced, report = run("integer", ["  "])
+    assert report.passed is True
+    assert coerced[0]["x"] is None
+
+
 # ── float ─────────────────────────────────────────────────────────────────────
 
 def test_float_valid():
@@ -80,6 +93,22 @@ def test_float_valid():
 
 def test_float_rejects_text():
     coerced, report = run("float", ["abc"])
+    assert report.passed is False
+
+
+def test_float_rejects_nan():
+    coerced, report = run("float", ["nan"])
+    assert report.passed is False
+    assert "finite" in report.violations[0].message
+
+
+def test_float_rejects_inf():
+    coerced, report = run("float", ["inf"])
+    assert report.passed is False
+
+
+def test_float_rejects_negative_inf():
+    coerced, report = run("float", ["-inf"])
     assert report.passed is False
 
 
@@ -103,6 +132,13 @@ def test_boolean_rejects_unknown():
     coerced, report = run("boolean", ["maybe"])
     assert report.passed is False
     assert "boolean" in report.violations[0].message
+
+
+def test_boolean_with_whitespace():
+    coerced, report = run("boolean", [" true ", " false "])
+    assert report.passed is True
+    assert coerced[0]["x"] is True
+    assert coerced[1]["x"] is False
 
 
 # ── date ──────────────────────────────────────────────────────────────────────

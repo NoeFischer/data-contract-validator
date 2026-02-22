@@ -37,20 +37,25 @@ def load_contract(contract_path: str | Path) -> DataContract:
         raise ContractLoadError(f"Contract schema invalid:\n{exc}") from exc
 
 
-def load_csv(data_path: str | Path) -> list[dict[str, str]]:
+def load_csv(data_path: str | Path) -> tuple[list[str], list[dict[str, str]]]:
+    """Load a CSV file and return (fieldnames, rows).
+
+    Uses utf-8-sig to handle optional BOM from Excel exports.
+    All values are raw strings; empty cells become "".
+    """
     path = Path(data_path)
     if not path.exists():
         raise DataLoadError(f"Data file not found: {path}")
 
     try:
-        with path.open("r", encoding="utf-8", newline="") as f:
+        with path.open("r", encoding="utf-8-sig", newline="") as f:
             reader = csv.DictReader(f)
-            if reader.fieldnames is None:
-                return []
+            fieldnames = list(reader.fieldnames) if reader.fieldnames else []
             # Replace None values (empty trailing cells) with empty string
-            return [
+            rows = [
                 {k: (v if v is not None else "") for k, v in row.items()}
                 for row in reader
             ]
+            return fieldnames, rows
     except OSError as exc:
         raise DataLoadError(f"Failed to read CSV {path}: {exc}") from exc

@@ -20,10 +20,14 @@ class ColumnDefinition(BaseModel):
     constraints: ColumnConstraints = Field(default_factory=ColumnConstraints)
 
     @model_validator(mode="after")
-    def format_only_for_temporal(self) -> "ColumnDefinition":
+    def validate_column_options(self) -> "ColumnDefinition":
         if self.format is not None and self.type not in ("date", "datetime"):
             raise ValueError(
                 f"'format' is only valid for date/datetime columns, not '{self.type}'"
+            )
+        if self.constraints.enum is not None and self.type != "string":
+            raise ValueError(
+                f"'enum' is only valid for string columns, not '{self.type}'"
             )
         return self
 
@@ -49,7 +53,7 @@ class SchemaDefinition(BaseModel):
 
 class ContractMetadata(BaseModel):
     name: str = Field(..., min_length=1)
-    version: str
+    version: str = Field(..., min_length=1)
     description: str | None = None
     owner: str | None = None
 

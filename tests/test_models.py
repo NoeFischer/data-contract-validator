@@ -76,6 +76,30 @@ def test_column_definition_empty_name_rejected():
         ColumnDefinition(name="", type="string")
 
 
+def test_column_definition_enum_only_on_string():
+    col = ColumnDefinition(
+        name="tier", type="string",
+        constraints=ColumnConstraints(enum=["a", "b"]),
+    )
+    assert col.constraints.enum == ["a", "b"]
+
+
+def test_column_definition_enum_rejected_on_integer():
+    with pytest.raises(ValidationError, match="'enum' is only valid"):
+        ColumnDefinition(
+            name="x", type="integer",
+            constraints=ColumnConstraints(enum=["1", "2"]),
+        )
+
+
+def test_column_definition_enum_rejected_on_boolean():
+    with pytest.raises(ValidationError, match="'enum' is only valid"):
+        ColumnDefinition(
+            name="x", type="boolean",
+            constraints=ColumnConstraints(enum=["true", "false"]),
+        )
+
+
 # ── SchemaDefinition ──────────────────────────────────────────────────────────
 
 def test_schema_no_duplicate_names():
@@ -89,6 +113,13 @@ def test_schema_no_duplicate_names():
 def test_schema_empty_columns_rejected():
     with pytest.raises(ValidationError):
         SchemaDefinition(columns=[])
+
+
+# ── ContractMetadata ──────────────────────────────────────────────────────────
+
+def test_empty_version_rejected():
+    with pytest.raises(ValidationError):
+        ContractMetadata(name="test", version="")
 
 
 # ── DataContract ──────────────────────────────────────────────────────────────

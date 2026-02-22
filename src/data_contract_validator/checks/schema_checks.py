@@ -5,7 +5,7 @@ from data_contract_validator.models.report import ValidationReport, Violation
 
 
 def check_schema_presence(
-    rows: list[dict[str, str]],
+    fieldnames: list[str],
     contract: DataContract,
     report: ValidationReport,
 ) -> set[str]:
@@ -15,11 +15,7 @@ def check_schema_presence(
     Returns the set of declared column names that are present in the data
     so downstream checks can skip missing columns gracefully.
     """
-    if not rows:
-        csv_columns: set[str] = set()
-    else:
-        csv_columns = set(rows[0].keys())
-
+    csv_columns = set(fieldnames)
     contract_columns = set(contract.column_map.keys())
 
     missing = contract_columns - csv_columns

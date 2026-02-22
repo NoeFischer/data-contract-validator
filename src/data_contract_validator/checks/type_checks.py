@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import math
 from typing import Any
 
 from data_contract_validator.models.contract import ColumnDefinition, DataContract
@@ -19,10 +20,11 @@ def _coerce(value: str, col_def: ColumnDefinition) -> tuple[Any, str | None]:
     On failure: (None, error_message).
     Empty string is treated as null — returns (None, None) with no error.
     """
-    if value == "":
+    if value == "" or value.strip() == "":
         return None, None
 
     col_type = col_def.type
+    value = value.strip()
 
     try:
         if col_type == "string":
@@ -34,10 +36,13 @@ def _coerce(value: str, col_def: ColumnDefinition) -> tuple[Any, str | None]:
             return int(value), None
 
         if col_type == "float":
-            return float(value), None
+            result = float(value)
+            if math.isnan(result) or math.isinf(result):
+                raise ValueError(f"'{value}' is not a finite number")
+            return result, None
 
         if col_type == "boolean":
-            lower = value.lower().strip()
+            lower = value.lower()
             if lower in BOOLEAN_TRUE:
                 return True, None
             if lower in BOOLEAN_FALSE:
@@ -88,7 +93,7 @@ def check_types(
 
             # string columns need no coercion — skip to avoid noise
             if col_def.type == "string":
-                coerced[col_name] = raw_value if raw_value != "" else None
+                coerced[col_name] = raw_value if raw_value.strip() != "" else None
                 continue
 
             typed_value, error = _coerce(raw_value, col_def)

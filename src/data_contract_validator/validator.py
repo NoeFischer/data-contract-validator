@@ -9,6 +9,7 @@ from data_contract_validator.models.report import ValidationReport
 
 def validate(
     contract: DataContract,
+    fieldnames: list[str],
     rows: list[dict[str, str]],
     data_file: str,
 ) -> ValidationReport:
@@ -20,7 +21,7 @@ def validate(
     )
 
     # 1. Check all declared columns are present
-    present_columns = check_schema_presence(rows, contract, report)
+    present_columns = check_schema_presence(fieldnames, contract, report)
 
     # 2. Coerce raw strings to declared types
     coerced_rows = check_types(rows, contract, present_columns, report)

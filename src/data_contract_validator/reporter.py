@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from rich import box
 from rich.console import Console
@@ -55,5 +56,6 @@ def print_report(report: ValidationReport, console: Console | None = None) -> No
 
 
 def export_json(report: ValidationReport, output_path: str) -> None:
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(report.model_dump(), f, indent=2, default=str)
+    path = Path(output_path)
+    with path.open("w", encoding="utf-8") as f:
+        json.dump(report.model_dump(mode="json"), f, indent=2)

@@ -57,7 +57,7 @@ def _check_enum(
         if value is None:
             continue  # nulls are handled by required check
         row_num = row_index + 2
-        if str(value) not in allowed_set:
+        if value not in allowed_set:
             report.add_violation(Violation(
                 rule="enum",
                 column=col,

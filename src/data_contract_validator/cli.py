@@ -15,16 +15,17 @@ from data_contract_validator.validator import validate
 
 
 @click.command()
+@click.version_option(version="0.1.0", prog_name="validate-contract")
 @click.option(
     "--contract", "-c",
     required=True,
-    type=click.Path(exists=True, dir_okay=False),
+    type=click.Path(dir_okay=False),
     help="Path to the YAML contract file.",
 )
 @click.option(
     "--data", "-d",
     required=True,
-    type=click.Path(exists=True, dir_okay=False),
+    type=click.Path(dir_okay=False),
     help="Path to the CSV data file.",
 )
 @click.option(
@@ -42,12 +43,12 @@ def main(contract: str, data: str, output: str | None) -> None:
         sys.exit(2)
 
     try:
-        rows = load_csv(data)
+        fieldnames, rows = load_csv(data)
     except DataLoadError as exc:
         click.echo(f"Error loading data: {exc}", err=True)
         sys.exit(2)
 
-    report = validate(contract_model, rows, data)
+    report = validate(contract_model, fieldnames, rows, data)
     print_report(report)
 
     if output:

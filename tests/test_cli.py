@@ -59,6 +59,15 @@ def test_exit_2_on_missing_contract(tmp_path):
     data_path = write(tmp_path, "data.csv", VALID_CSV)
     result = runner.invoke(main, ["-c", "/no/such/file.yaml", "-d", data_path])
     assert result.exit_code == 2
+    assert "Error loading contract" in result.output
+
+
+def test_exit_2_on_missing_data(tmp_path):
+    runner = CliRunner()
+    contract_path = write(tmp_path, "contract.yaml", VALID_CONTRACT)
+    result = runner.invoke(main, ["-c", contract_path, "-d", "/no/such/data.csv"])
+    assert result.exit_code == 2
+    assert "Error loading data" in result.output
 
 
 def test_exit_2_on_bad_contract_yaml(tmp_path):
@@ -67,6 +76,7 @@ def test_exit_2_on_bad_contract_yaml(tmp_path):
     data_path = write(tmp_path, "data.csv", VALID_CSV)
     result = runner.invoke(main, ["-c", contract_path, "-d", data_path])
     assert result.exit_code == 2
+    assert "Error loading contract" in result.output
 
 
 # ── Output content ────────────────────────────────────────────────────────────
@@ -121,3 +131,23 @@ def test_json_output_contains_violations(tmp_path):
     report = json.loads(Path(output_path).read_text())
     assert report["passed"] is False
     assert len(report["violations"]) > 0
+
+
+# ── Version flag ──────────────────────────────────────────────────────────────
+
+def test_version_flag():
+    runner = CliRunner()
+    result = runner.invoke(main, ["--version"])
+    assert result.exit_code == 0
+    assert "0.1.0" in result.output
+
+
+# ── Header-only CSV ──────────────────────────────────────────────────────────
+
+def test_header_only_csv_passes(tmp_path):
+    runner = CliRunner()
+    contract_path = write(tmp_path, "contract.yaml", VALID_CONTRACT)
+    data_path = write(tmp_path, "data.csv", "id,age,tier\n")
+    result = runner.invoke(main, ["-c", contract_path, "-d", data_path])
+    assert result.exit_code == 0
+    assert "PASSED" in result.output
