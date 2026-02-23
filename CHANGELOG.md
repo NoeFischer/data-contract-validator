@@ -4,6 +4,20 @@ Changes are recorded here with a focus on *why* decisions were made, not just wh
 
 ---
 
+## [0.2.0] — 2026-02-23
+
+### Documentation
+
+**Why MkDocs with Material theme**
+
+The project had no rendered documentation — users had to read source code or the README to understand the API. MkDocs with Material gives us a searchable, navigable doc site with auto-generated API reference (via mkdocstrings) from existing docstrings. This makes the project accessible to users who aren't reading the source.
+
+**Why mkdocs is capped at <2**
+
+MkDocs 2.0 removes the plugin system and redesigns the theming layer, breaking compatibility with Material for MkDocs and mkdocstrings. Since both are core to our doc setup, we pin to 1.x until the ecosystem settles (likely via Zensical, the Material team's planned MkDocs successor).
+
+---
+
 ## [0.1.1] — 2026-02-22
 
 ### Bug fixes and hardening

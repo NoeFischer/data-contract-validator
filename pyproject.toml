@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "data-contract-validator"
-version = "0.1.0"
+version = "0.2.0"
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.6",
@@ -23,7 +23,7 @@ dev = [
     "ruff>=0.3",
 ]
 docs = [
-    "mkdocs>=1.6",
+    "mkdocs>=1.6,<2",
     "mkdocs-material>=9.5",
     "mkdocstrings[python]>=0.25",
 ]
