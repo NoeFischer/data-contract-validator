@@ -2,6 +2,8 @@
 
 Validate CSV files against a declarative YAML data contract. Define what your data should look like — the validator tells you exactly where it doesn't.
 
+![demo](demo.gif)
+
 ```
 ╭────────────────────────── Data Contract Validation ──────────────────────────╮
 │ Contract:  customers v1.0.0                                                  │
